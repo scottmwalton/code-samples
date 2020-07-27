@@ -1,11 +1,15 @@
 ﻿@page "/widgets"
 @inject HttpClient Http
+@inject ISessionStorageService SessionService
 
 <h3>Widgets</h3>
 <TelerikGrid Data="@widgets"
+             @ref="Grid"
              PageSize="5"
              Pageable="true"
              Sortable="true"
+             OnStateInit="@((GridStateEventArgs<Widget> args) => OnStateInit(args))"
+             OnStateChanged="@((GridStateEventArgs<Widget> args) => OnStateChanged(args))"
              FilterMode="GridFilterMode.FilterMenu">
     <GridColumns>
         <GridColumn Field="@nameof(Widget.Name)" Title="Name" />
@@ -17,7 +21,7 @@
         <GridColumn Field="@nameof(Widget.LastOrdered)" Title="Last Ordered" />
         <GridColumn Field="@nameof(Widget.Description)" Title="Description">
             <Template>
-                @((context as Widget).Description.Substring(0,100))
+                @((context as Widget).Description.Substring(0, 100))
             </Template>
         </GridColumn>
     </GridColumns>
@@ -26,9 +30,38 @@
 
 @code {
     private List<Widget> widgets;
+    private TelerikGrid<Widget> Grid { get; set; }
+    private string stateStorageKey = "WidgetGridState";
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
         widgets = await Http.GetFromJsonAsync<List<Widget>>("/api/Widget/GetWidgets");
+    }
+
+    private async Task OnStateInit(GridStateEventArgs<Widget> args)
+    {
+        try
+        {
+            var state = await SessionService.GetItemAsync<GridState<Widget>>(stateStorageKey);
+            if (state != null)
+            {
+                args.GridState = state;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // the JS Interop for the local storage cannot be used during pre-rendering
+        }
+    }
+
+    private async Task OnStateChanged(GridStateEventArgs<Widget> args)
+    {
+        await SaveState();
+    }
+
+    async Task SaveState()
+    {
+        var gridState = Grid.GetState();
+        await SessionService.SetItemAsync(stateStorageKey, gridState);
     }
 }
