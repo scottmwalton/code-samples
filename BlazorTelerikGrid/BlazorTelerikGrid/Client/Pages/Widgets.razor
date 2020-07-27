@@ -3,8 +3,10 @@
 @inject ISessionStorageService SessionService
 
 <h3>Widgets</h3>
-<TelerikGrid Data="@widgets"
+<TelerikGrid Data="@Model.CurrentPageData"
              @ref="Grid"
+             OnRead="@ReadItems"
+             TotalCount="@Model.TotalItemCount"
              PageSize="5"
              Pageable="true"
              Sortable="true"
@@ -29,13 +31,13 @@
 
 
 @code {
-    private List<Widget> widgets;
-    private TelerikGrid<Widget> Grid { get; set; }
     private string stateStorageKey = "WidgetGridState";
+    private TelerikGrid<Widget> Grid { get; set; }
+    private DataEnvelope<Widget> Model { get; set; } = new DataEnvelope<Widget>();
 
     protected async override Task OnInitializedAsync()
     {
-        widgets = await Http.GetFromJsonAsync<List<Widget>>("/api/Widget/GetWidgets");
+        //widgets = await Http.GetFromJsonAsync<List<Widget>>("/api/Widget/GetWidgets");
     }
 
     private async Task OnStateInit(GridStateEventArgs<Widget> args)
@@ -63,5 +65,16 @@
     {
         var gridState = Grid.GetState();
         await SessionService.SetItemAsync(stateStorageKey, gridState);
+    }
+
+    protected async Task ReadItems(GridReadEventArgs args)
+    {
+        var response = await Http.PostAsJsonAsync("api/Widget/GetPagedWidgets", args.Request);
+        if (response.IsSuccessStatusCode)
+        {
+            Model = await response.Content.ReadFromJsonAsync<DataEnvelope<Widget>>();
+        }
+
+        StateHasChanged();
     }
 }
