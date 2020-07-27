@@ -1,0 +1,34 @@
+﻿@page "/widgets"
+@inject HttpClient Http
+
+<h3>Widgets</h3>
+<TelerikGrid Data="@widgets"
+             PageSize="5"
+             Pageable="true"
+             Sortable="true"
+             FilterMode="GridFilterMode.FilterMenu">
+    <GridColumns>
+        <GridColumn Field="@nameof(Widget.Name)" Title="Name" />
+        <GridColumn Field="@nameof(Widget.Price)" Title="Price">
+            <Template>
+                @(String.Format("{0:C2}", (context as Widget).Price))
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Widget.LastOrdered)" Title="Last Ordered" />
+        <GridColumn Field="@nameof(Widget.Description)" Title="Description">
+            <Template>
+                @((context as Widget).Description.Substring(0,100))
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</TelerikGrid>
+
+
+@code {
+    private List<Widget> widgets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        widgets = await Http.GetFromJsonAsync<List<Widget>>("/api/Widget/GetWidgets");
+    }
+}
