@@ -1,0 +1,82 @@
+﻿@page "/Products"
+@inject HttpClient Http
+@inject ISessionStorageService SessionService
+
+<h3>Products</h3>
+<TelerikGrid Data="@Model.CurrentPageData"
+             @ref="Grid"
+             OnRead="@ReadItems"
+             TotalCount="@Model.TotalItemCount"
+             PageSize="5"
+             Pageable="true"
+             Sortable="true"
+             OnStateInit="@((GridStateEventArgs<Product> args) => OnStateInit(args))"
+             OnStateChanged="@((GridStateEventArgs<Product> args) => OnStateChanged(args))"
+             FilterMode="GridFilterMode.FilterMenu">
+    <GridColumns>
+        <GridColumn Field="@nameof(Product.Name)" Title="Name" />
+        <GridColumn Field="@nameof(Product.Price)" Title="Price">
+            <Template>
+                @(String.Format("{0:C2}", (context as Product).Price))
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.LastOrdered)" Title="Last Ordered">
+            <Template>
+                @((context as Product).LastOrdered.ToString("dd MMM yyyy"))
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.Description)" Title="Description">
+            <Template>
+                @((context as Product).Description.Substring(0, 100))
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</TelerikGrid>
+
+
+@code {
+    private string stateStorageKey = "ProductGridState";
+    private TelerikGrid<Product> Grid { get; set; }
+    private DataEnvelope<Product> Model { get; set; } = new DataEnvelope<Product>();
+
+    // Original code read in all items into grid - saving state works with this approach
+    //protected async override Task OnInitializedAsync()
+    //{
+    //    Products = await Http.GetFromJsonAsync<List<Product>>("/api/Product/GetProducts");
+    //}
+
+    private async Task OnStateInit(GridStateEventArgs<Product> args)
+    {
+        try
+        {
+            var state = await SessionService.GetItemAsync<GridState<Product>>(stateStorageKey);
+            if (state != null)
+            {
+                args.GridState = state;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // the JS Interop for the local storage cannot be used during pre-rendering
+        }
+    }
+
+    private async Task OnStateChanged(GridStateEventArgs<Product> args)
+    {
+        var gridState = Grid.GetState();
+        await SessionService.SetItemAsync(stateStorageKey, gridState);
+    }
+
+    // When attempting to read in only what's needed, the saving/restoring state does not work 
+    // The grid shows that it is on the last page viewed, but the data is from page 1
+    protected async Task ReadItems(GridReadEventArgs args)
+    {
+        var response = await Http.PostAsJsonAsync("api/Products/GetPagedProducts", args.Request);
+        if (response.IsSuccessStatusCode)
+        {
+            Model = await response.Content.ReadFromJsonAsync<DataEnvelope<Product>>();
+        }
+
+        StateHasChanged();
+    }
+}

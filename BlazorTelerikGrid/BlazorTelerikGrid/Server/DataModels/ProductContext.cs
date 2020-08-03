@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace BlazorTelerikGrid.Server.DataModels
 {
-    public class WidgetContext
+    public class ProductContext
     {
-        public WidgetContext()
+        public ProductContext()
         {
             SeedData();
         }
 
-        public List<Widget> Widgets { get; set; }
+        public List<Product> Products { get; set; }
 
         private void SeedData()
         {
-            // Load widgets from the json file
-            Widgets = JsonConvert.DeserializeObject<List<Widget>>(File.ReadAllText("Widgets.json"));
+            // Load products from the json file
+            Products = JsonConvert.DeserializeObject<List<Product>>(File.ReadAllText("Products.json"));
         }
     }
 }

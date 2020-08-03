@@ -7,9 +7,9 @@ using Telerik.DataSource;
 
 namespace BlazorTelerikGrid.Server.DataModels
 {
-    public interface IWidgetService
+    public interface IProductService
     {
-        List<Widget> GetWidgets();
-        Task<DataSourceResult> GetPagedWidgets(DataSourceRequest request);
+        List<Product> GetProducts();
+        Task<DataSourceResult> GetPagedProducts(DataSourceRequest request);
     }
 }

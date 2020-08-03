@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BlazorTelerikGrid.Shared
 {
-    public class Widget
+    public class Product
     {
         public int Id { get; set; }
         public string Name { get; set; }
