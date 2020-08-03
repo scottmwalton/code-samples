@@ -35,10 +35,11 @@
     private TelerikGrid<Widget> Grid { get; set; }
     private DataEnvelope<Widget> Model { get; set; } = new DataEnvelope<Widget>();
 
-    protected async override Task OnInitializedAsync()
-    {
-        //widgets = await Http.GetFromJsonAsync<List<Widget>>("/api/Widget/GetWidgets");
-    }
+    // Original code read in all items into grid - saving state works with this approach
+    //protected async override Task OnInitializedAsync()
+    //{
+    //    widgets = await Http.GetFromJsonAsync<List<Widget>>("/api/Widget/GetWidgets");
+    //}
 
     private async Task OnStateInit(GridStateEventArgs<Widget> args)
     {
@@ -58,15 +59,12 @@
 
     private async Task OnStateChanged(GridStateEventArgs<Widget> args)
     {
-        await SaveState();
-    }
-
-    async Task SaveState()
-    {
         var gridState = Grid.GetState();
         await SessionService.SetItemAsync(stateStorageKey, gridState);
     }
 
+    // When attempting to read in only what's needed, the saving/restoring state does not work 
+    // The grid shows that it is on the last page viewed, but the data is from page 1
     protected async Task ReadItems(GridReadEventArgs args)
     {
         var response = await Http.PostAsJsonAsync("api/Widget/GetPagedWidgets", args.Request);
