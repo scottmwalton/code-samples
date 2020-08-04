@@ -1,0 +1,98 @@
+﻿@page "/ProductsWorkaround"
+@inject HttpClient Http
+@inject ISessionStorageService SessionService
+
+<h3>Products</h3>
+<TelerikGrid Data="@Model.CurrentPageData"
+             @ref="Grid"
+             OnRead="@ReadItems"
+             TotalCount="@Model.TotalItemCount"
+             PageSize="5"
+             Pageable="true"
+             Sortable="true"
+             OnStateInit="@((GridStateEventArgs<Product> args) => OnStateInit(args))"
+             OnStateChanged="@((GridStateEventArgs<Product> args) => OnStateChanged(args))"
+             FilterMode="GridFilterMode.FilterMenu">
+    <GridColumns>
+        <GridColumn Field="@nameof(Product.Name)" Title="Name" />
+        <GridColumn Field="@nameof(Product.Price)" Title="Price">
+            <Template>
+                @(String.Format("{0:C2}", (context as Product).Price))
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.LastOrdered)" Title="Last Ordered">
+            <Template>
+                @((context as Product).LastOrdered.ToString("dd MMM yyyy"))
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.Description)" Title="Description">
+            <Template>
+                @((context as Product).Description.Substring(0, 100))
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</TelerikGrid>
+
+
+@code {
+    private string stateStorageKey = "ProductWorkaroundGridState";
+    private TelerikGrid<Product> Grid { get; set; }
+    private DataEnvelope<Product> Model { get; set; } = new DataEnvelope<Product>();
+    // Add these next two variables
+    private bool firstCallOnStateChanged = true;
+    private bool firstCallReadItems = true;
+
+    private async Task OnStateInit(GridStateEventArgs<Product> args)
+    {
+        try
+        {
+            var state = await SessionService.GetItemAsync<GridState<Product>>(stateStorageKey);
+            if (state != null)
+            {
+                args.GridState = state;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // the JS Interop for the local storage cannot be used during pre-rendering
+        }
+    }
+
+    private async Task OnStateChanged(GridStateEventArgs<Product> args)
+    {
+        // If it's not the first call, then save to Storage
+        if (!firstCallOnStateChanged)
+        {
+            var gridState = Grid.GetState();
+            await SessionService.SetItemAsync(stateStorageKey, gridState);
+        }
+        else
+        {
+            // Do not save and just set the flag
+            firstCallOnStateChanged = false;
+        }
+    }
+
+    protected async Task ReadItems(GridReadEventArgs args)
+    {
+        // If it's the firs call, check that the page numbers are the same
+        if(firstCallReadItems)
+        {
+            var args2 = new GridStateEventArgs<Product>();
+            await OnStateInit(args2);
+            if(null != args2.GridState && args.Request.Page != args2.GridState.Page)
+            {
+                args.Request.Page = args2.GridState.Page.Value;
+            }
+            firstCallReadItems = false;
+        }
+
+        var response = await Http.PostAsJsonAsync("api/Products/GetPagedProducts", args.Request);
+        if (response.IsSuccessStatusCode)
+        {
+            Model = await response.Content.ReadFromJsonAsync<DataEnvelope<Product>>();
+        }
+
+        StateHasChanged();
+    }
+}
