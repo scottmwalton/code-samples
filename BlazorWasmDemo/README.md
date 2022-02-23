@@ -545,6 +545,16 @@ It then calls the ```MarkUserAsAuthenticated``` method we just looked at on the 
 
 The ```Logout``` method is just doing the reverse of the ```Login``` method.
 
+### Razor Imports
+
+We need to add a few using statments into the ```_Imports.razor``` file. Add the following lines to the end of the file. You will need to update the first two lines with the appropriate namespace for your project.
+
+```html
+@using BlazorClientSideAuth.Client.Services
+@using BlazorClientSideAuth.Shared
+@using Microsoft.AspNetCore.Components.Authorization
+```
+
 ### Register Component
 
 We're on the home stretch now. We can now turn our attention to the UI and creating a component which will allow people to register with the site.
