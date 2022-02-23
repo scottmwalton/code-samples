@@ -2,7 +2,7 @@
 
 ## Getting Setup: Creating the solution
 
-![Create Blazor Solution Step 1](/assets/images/create_blazor_solution1.png "Create Blazor Solution Step 1")
+![Create Blazor Solution Step 1](https://github.com/scottmwalton/code-samples/blob/master/BlazorWasmDemo/assets/images/create_blazor_solution1.png "Create Blazor Solution Step 1")
 
 Start by creating a new Blazor WebAssembly App, this template will create a Blazor application which runs in the 
 clients browser on WebAssembly hosted by a ASP.NET Core WebAPI. Search for "Blazor" templates if it does not appear in the list.
