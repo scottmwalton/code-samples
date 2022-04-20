@@ -11,7 +11,7 @@ dotnet new console -o ConsoleAppDemo
 ```Powershell
 Install-Package Serilog
 Install-Package Serilog.Settings.Configuration
-Install-Package Serilog.Sinks.Files
+Install-Package Serilog.Sinks.File
 Install-Package Serilog.Sinks.Console
 Install-Package Microsoft.Extensions.Configuration.Json
 ```
