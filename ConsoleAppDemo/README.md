@@ -36,12 +36,12 @@ Add a new item to the project. Select "JSON File" as the item type and name it `
 		"WriteTo": [
 			{
 				"Name": "File",
-				"Args": { "path": "D:/Temp/Logs/CleanupDatabaseBackups-.txt" }
+				"Args": { "path": "D:/Temp/Logs/ConsoleAppDemo-.txt" }
 			},
 			{ "Name": "Console" }
 		],
 		"Properties": {
-			"Application": "CleanupDatabaseBackups"
+			"Application": "ConsoleAppDemo"
 		}
 	},
 	"ConsoleAppDemoConfig": {
