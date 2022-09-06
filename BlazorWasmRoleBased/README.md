@@ -14,7 +14,7 @@ How roles are created and managed is dependent on the backing store used. As weâ
 
 Weâ€™ll be building on top of the application we build in [this sample](https://github.com/scottmwalton/code-samples/tree/master/BlazorWasmDemo).
 
-### Settin up Roles with ASP.NET Core Identity
+### Setting up Roles with ASP.NET Core Identity
 
 We need to add the role specific services to our application. To do this, we need to update the code in the ```Program.cs``` file.
 
