@@ -1,4 +1,4 @@
-# Configuring Role Based Athorization with client-side Blazor
+# Configuring Role Based Authorization with client-side Blazor
 
 *Full disclosure - This sample is completely copied from the blog post by Chris Sainty titled ["Configuring Role Based Athorization with client-side Blazor"](https://chrissainty.com/securing-your-blazor-apps-configuring-role-based-authorization-with-client-side-blazor/).  That post was configured for .NET Core 3.1.  I have updated it for .NET 6*
 
