@@ -11,7 +11,7 @@ dotnet new console -o ConsoleAppDemo
 ```Powershell
 Install-Package Serilog
 Install-Package Serilog.Settings.Configuration
-Install-Package Serilog.Sinks.Files
+Install-Package Serilog.Sinks.File
 Install-Package Serilog.Sinks.Console
 Install-Package Microsoft.Extensions.Configuration.Json
 ```
@@ -36,12 +36,12 @@ Add a new item to the project. Select "JSON File" as the item type and name it `
 		"WriteTo": [
 			{
 				"Name": "File",
-				"Args": { "path": "D:/Temp/Logs/CleanupDatabaseBackups-.txt" }
+				"Args": { "path": "D:/Temp/Logs/ConsoleAppDemo-.txt" }
 			},
 			{ "Name": "Console" }
 		],
 		"Properties": {
-			"Application": "CleanupDatabaseBackups"
+			"Application": "ConsoleAppDemo"
 		}
 	},
 	"ConsoleAppDemoConfig": {

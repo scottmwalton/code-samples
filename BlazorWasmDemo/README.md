@@ -1,4 +1,4 @@
-# Authentication with client-side Blazor using WebAPI and ASP.NET Core Identity
+# Authentication with Client-Side Blazor using WebAPI and ASP.NET Core Identity
 
 *Full disclosure - This sample is completely copied from the blog post by Chris Sainty titled ["Athentication with client-side Blazor using WebAPI and APS.NET Core Identity"](https://chrissainty.com/securing-your-blazor-apps-authentication-with-clientside-blazor-using-webapi-aspnet-core-identity/).  That post was configured for .NET Core 3.1.  I have updated it for .NET 6*
 
