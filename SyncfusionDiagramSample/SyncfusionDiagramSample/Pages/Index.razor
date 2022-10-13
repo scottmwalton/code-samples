@@ -1,9 +1,54 @@
 ﻿@page "/"
+@inject MockDataService dataService
 
 <PageTitle>Index</PageTitle>
+<h1>Refresh Whole Diagram - Flickers</h1>
+<button @onclick="AddNode"><span class="oi oi-hand"></span>Add Node</button>
+@if (treeNodes != null)
+{
+	<TreeDiagram TreeNodes="@treeNodes" />
+}
 
-<h1>Hello, world!</h1>
+@code {
+	protected List<DisplayNode>? treeNodes;
+	protected int iMax;
 
-Welcome to your new app.
+	protected override void OnInitialized()
+	{
+		// Get the tree for display
+		treeNodes = dataService.GetRefreshData();
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+		// Set our Max Id value
+		if (treeNodes.Count > 0)
+			iMax = treeNodes.Max(n => n.Id);
+	}
+
+	protected async Task AddNode()
+	{
+		// Destroy our previous data set
+		treeNodes?.Clear();
+		treeNodes = null;
+		Console.WriteLine($"Nodes cleared. {(treeNodes == null)}");
+		// Create a new node
+		var displayNode = new DisplayNode
+			{
+				Id = iMax + 1,
+				NodeName = "My New Node",
+				ParentId = iMax,
+				NodeType = "Added child node"
+			};
+
+		// Add to our dataset
+		dataService.AddRefreshNode(displayNode);
+
+		// Short Pause to simulate getting data
+		await Task.Delay(50);
+
+		// Update our display
+		treeNodes = dataService.GetRefreshData();
+		Console.WriteLine($"Nodes reloaded - {treeNodes?.Count}");
+
+		// Set our Max Id
+		iMax = treeNodes?.Max(n => n.Id) ?? 0;
+	}
+}
