@@ -1,0 +1,99 @@
+﻿@inject MockDataService dataService
+
+	<div style="width: 1920px; height: 1080px;">
+		<SfDiagramComponent @ref="diagram"
+											Width="100%"
+											Height="100%"
+											Nodes="@nodes"
+											Connectors="@connectors"
+											InteractionController="@DiagramInteractions.ZoomPan">
+			<ScrollSettings ScrollLimit="ScrollLimitMode.Infinity"></ScrollSettings>
+			<Layout Type="LayoutType.HierarchicalTree"
+						HorizontalSpacing="60"
+						Orientation="LayoutOrientation.LeftToRight"
+						VerticalSpacing="60"
+						HorizontalAlignment="HorizontalAlignment.Auto"
+						VerticalAlignment="VerticalAlignment.Auto">
+				<LayoutMargin Top="50"
+										Bottom="50"
+										Right="50"
+										Left="50">
+				</LayoutMargin>
+			</Layout>
+			<SnapSettings Constraints="@SnapConstraints.None"></SnapSettings>
+			<DiagramTemplates>
+				<NodeTemplate>
+					@{
+							Node node1 = (context as Node);
+							DisplayNode treeNode = ((DisplayNode)node1.Data as DisplayNode);
+							NodeShapes type = node1.Shape.Type;
+							if (type == NodeShapes.HTML)
+							{
+								<div class="node-details" style="border:1px solid black; height: 75px; width: 200px;">
+									<span class="badge rounded-pill" style="float: right; margin-right: 3px; background-color: var(--bs-primary)">@treeNode.Id</span>
+									@treeNode.NodeName<br />
+									@treeNode.NodeType<br />
+								</div>
+							}
+						}
+					</NodeTemplate>
+				</DiagramTemplates>
+			</SfDiagramComponent>
+		</div>
+
+	@code {
+	[Parameter]
+	public List<DisplayNode>? TreeNodes { get; set; }
+
+	protected SfDiagramComponent? diagram;
+	protected DiagramObjectCollection<Node> nodes = new();
+	protected DiagramObjectCollection<Connector> connectors = new();
+
+	protected override void OnInitialized()
+	{
+		if(TreeNodes != null)
+		{
+			// Build our diagram nodes and connectors
+			foreach (var node in TreeNodes)
+			{
+				AddDisplayNode(node);
+			}
+		}
+	}
+
+	protected void AddDisplayNode(DisplayNode node)
+	{
+		// Create the new Node
+		var diagNode = new Node()
+			{
+				ID = node.Id.ToString(),
+				Width = 200,
+				Height = 75,
+				Data = node,
+				Shape = new Shape() { Type = Syncfusion.Blazor.Diagram.NodeShapes.HTML }
+			};
+
+		// If we have a parent then build the connector
+		if (node.ParentId != null)
+		{
+			var connectorStyle = new ShapeStyle { StrokeColor = "#000000", StrokeWidth = 1 };
+			var diagConnector = new Connector
+				{
+					Type = ConnectorSegmentType.Orthogonal,
+					Style = connectorStyle,
+					SourceID = node.ParentId.Value.ToString(),
+					TargetID = node.Id.ToString(),
+					TargetDecorator = new DecoratorSettings()
+					{
+						Shape = DecoratorShape.None
+					}
+				};
+
+			// Add the connector to the list
+			connectors.Add(diagConnector);
+		}
+
+		// Add the node to the list
+		nodes.Add(diagNode);
+	}
+}

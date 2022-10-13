@@ -1,0 +1,152 @@
+﻿@page "/dolayout"
+@using System.Collections.ObjectModel
+
+@inject MockDataService dataService
+
+<PageTitle>Do Layout</PageTitle>
+
+<h3>Do Layout - Not the results we want, but no flicker</h3>
+<button @onclick="AddNode"><span class="oi oi-hand"></span>Add Node</button>
+@if (treeNodes != null)
+{
+	<div style="width: 1920px; height: 1080px;">
+		<SfDiagramComponent @ref="diagram"
+											Width="100%"
+											Height="100%"
+											Nodes="@nodes"
+											Connectors="@connectors"
+											InteractionController="@DiagramInteractions.ZoomPan">
+			<ScrollSettings ScrollLimit="ScrollLimitMode.Infinity"></ScrollSettings>
+			<Layout Type="LayoutType.HierarchicalTree"
+						HorizontalSpacing="60"
+						Orientation="LayoutOrientation.LeftToRight"
+						VerticalSpacing="60"
+						HorizontalAlignment="HorizontalAlignment.Auto"
+						VerticalAlignment="VerticalAlignment.Auto">
+				<LayoutMargin Top="50"
+										Bottom="50"
+										Right="50"
+										Left="50">
+				</LayoutMargin>
+			</Layout>
+			<SnapSettings Constraints="@SnapConstraints.None"></SnapSettings>
+			<DiagramTemplates>
+				<NodeTemplate>
+					@{
+							Node node1 = (context as Node);
+							DisplayNode treeNode = ((DisplayNode)node1.Data as DisplayNode);
+							NodeShapes type = node1.Shape.Type;
+							if (type == NodeShapes.HTML)
+							{
+								<div class="node-details" style="border:1px solid black; height: 75px; width: 200px;">
+									<span class="badge rounded-pill" style="float: right; margin-right: 3px; background-color: var(--bs-primary)">@treeNode.Id</span>
+									@treeNode.NodeName<br />
+									@treeNode.NodeType<br />
+								</div>
+							}
+						}
+					</NodeTemplate>
+				</DiagramTemplates>
+			</SfDiagramComponent>
+		</div>
+}
+
+@code {
+	protected List<DisplayNode>? treeNodes;
+	protected int iMax;
+	protected SfDiagramComponent? diagram;
+	protected DiagramObjectCollection<Node> nodes = new();
+	protected DiagramObjectCollection<Connector> connectors = new();
+
+	protected override void OnInitialized()
+	{
+		// Get the tree for display
+		treeNodes = dataService.GetDoLayoutData();
+
+		// Build our diagram nodes and connectors
+		foreach (var node in treeNodes)
+		{
+			AddDisplayNode(node);
+		}
+
+		// Set our Max Id value
+		if (treeNodes.Count > 0)
+			iMax = treeNodes.Max(n => n.Id);
+	}
+
+	protected void AddNode()
+	{
+		// Destroy our previous data set
+		treeNodes?.Clear();
+		treeNodes = null;
+
+		// Create a new node
+		var displayNode = new DisplayNode
+			{
+				Id = iMax + 1,
+				NodeName = "My New Node",
+				ParentId = iMax,
+				NodeType = "Added child node"
+			};
+
+		// Add to our dataset
+		dataService.AddDoLayoutNode(displayNode);
+
+		// Update our display
+		treeNodes = dataService.GetDoLayoutData();
+		AddDisplayNode(displayNode);
+		diagram?.DoLayout();
+
+		// Center our new node
+		ShowNodeCentered(nodes.First(n => n.ID == displayNode.Id.ToString()));
+
+		// Set our Max Id
+		iMax = treeNodes?.Max(n => n.Id) ?? 0;
+	}
+
+	protected void AddDisplayNode(DisplayNode node)
+	{
+		// Create the new Node
+		var diagNode = new Node()
+			{
+				ID = node.Id.ToString(),
+				Width = 200,
+				Height = 75,
+				Data = node,
+				Shape = new Shape() { Type = Syncfusion.Blazor.Diagram.NodeShapes.HTML }
+			};
+
+		// If we have a parent then build the connector
+		if (node.ParentId != null)
+		{
+			var connectorStyle = new ShapeStyle { StrokeColor = "#000000", StrokeWidth = 1 };
+			var diagConnector = new Connector
+				{
+					Type = ConnectorSegmentType.Orthogonal,
+					Style = connectorStyle,
+					SourceID = node.ParentId.Value.ToString(),
+					TargetID = node.Id.ToString(),
+					TargetDecorator = new DecoratorSettings()
+					{
+						Shape = DecoratorShape.None
+					}
+				};
+
+			// Add the connector to the list
+			connectors.Add(diagConnector);
+		}
+
+		// Add the node to the list
+		nodes.Add(diagNode);
+	}
+
+	public void ShowNodeCentered(Node node)
+	{
+		// Make sure we have a diagram
+		if (diagram != null)
+		{
+			// Center the node in the current view.
+			diagram.BringIntoCenter(new DiagramRect(node.OffsetX, node.OffsetY, 200, 75));
+		}
+	}
+}
