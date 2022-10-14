@@ -7,6 +7,7 @@
 
 <h3>Do Layout - Not the results we want, but no flicker</h3>
 <button @onclick="AddNode"><span class="oi oi-hand"></span>Add Node</button>
+<button @onclick="AddSibling"><span class="oi oi-hand"></span>Add Sibling</button>
 @if (treeNodes != null)
 {
 	<div style="width: 1920px; height: 1080px;">
@@ -76,10 +77,6 @@
 
 	protected void AddNode()
 	{
-		// Destroy our previous data set
-		treeNodes?.Clear();
-		treeNodes = null;
-
 		// Create a new node
 		var displayNode = new DisplayNode
 			{
@@ -93,7 +90,33 @@
 		dataService.AddDoLayoutNode(displayNode);
 
 		// Update our display
-		treeNodes = dataService.GetDoLayoutData();
+		treeNodes?.Add(displayNode);
+		AddDisplayNode(displayNode);
+		diagram?.DoLayout();
+
+		// Center our new node
+		ShowNodeCentered(nodes.First(n => n.ID == displayNode.Id.ToString()));
+
+		// Set our Max Id
+		iMax = treeNodes?.Max(n => n.Id) ?? 0;
+	}
+
+	protected void AddSibling()
+	{
+		// Create a new node
+		var displayNode = new DisplayNode
+			{
+				Id = iMax + 1,
+				NodeName = "My New Sibling Node",
+				ParentId = iMax - 1,
+				NodeType = "Added child node"
+			};
+
+		// Add to our dataset
+		dataService.AddDoLayoutNode(displayNode);
+
+		// Update our display
+		treeNodes?.Add(displayNode);
 		AddDisplayNode(displayNode);
 		diagram?.DoLayout();
 
@@ -116,6 +139,9 @@
 				Shape = new Shape() { Type = Syncfusion.Blazor.Diagram.NodeShapes.HTML }
 			};
 
+		// Add the node to the list
+		nodes.Add(diagNode);
+
 		// If we have a parent then build the connector
 		if (node.ParentId != null)
 		{
@@ -135,9 +161,6 @@
 			// Add the connector to the list
 			connectors.Add(diagConnector);
 		}
-
-		// Add the node to the list
-		nodes.Add(diagNode);
 	}
 
 	public void ShowNodeCentered(Node node)
